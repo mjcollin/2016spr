@@ -38,6 +38,10 @@ def parse(str, headers=None):
         # assume we're parsing a line and not the headers
         for h in headers:
             retval[h] = ""
+        # Change to returning this
+        # because empty rows seems to cause an error when
+        # writing out df to parquet
+        #retval = None
         #raise e
 
     return retval
@@ -46,10 +50,10 @@ def parse(str, headers=None):
 if __name__ == "__main__":
 
     base_path = "hdfs://cloudera0.acis.ufl.edu:8020/user/mcollins/test_data"
-    recordset = "edbd"
+    file = "occurrence_raw_17a7.csv"
 
-    fn = "{0}/occurrence_raw_{1}.csv".format(base_path, recordset)
-    out_dir = "{0}/test_parquet_{1}".format(base_path, recordset)
+    fn = "{0}/{1}".format(base_path, file)
+    out_dir = "{0}/test_parquet_{1}".format(base_path, file)
 
     sc = SparkContext(appName="Parqueter")
 
@@ -64,9 +68,14 @@ if __name__ == "__main__":
 
     sqlContext = SQLContext(sc)
     df = parsed.map(lambda l: Row(**dict(l))).toDF()
+    print(df.count())
+
+    print(df.filter(df.coreid != "").count())
 
     df.write.parquet(out_dir)
 
+    #.filter(df.coreid != "").dropDuplicates()
+
     indf = sqlContext.read.parquet(out_dir)
 
-    print(indf.head())
+    print(indf.count())
