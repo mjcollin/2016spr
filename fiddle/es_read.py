@@ -9,7 +9,7 @@ conf = {"es.resource":"idigbio-3.0.0/records", "es.nodes":"c17node52.acis.ufl.ed
                 "must":[
                   {
                   "term":{
-                    "genus":"acer"
+                    "genus":"peromyscus"
                   }
                   }
                 ]
@@ -32,5 +32,7 @@ es_rrd = sc.newAPIHadoopRDD(inputFormatClass="org.elasticsearch.hadoop.mr.EsInpu
 #es_rrd.cache()
 #print(es_rrd.first())
 
-for r in es_rrd.take(10):
-    print(json.dumps(r))
+#for r in es_rrd.take(10):
+#    print(json.dumps(r))
+
+print(es_rrd.count())
