@@ -15,6 +15,17 @@ class PosTags:
 
 
 if __name__ == "__main__":
-    pos_tags = PosTags()
-    pos = pos_tags.tag(["Hello", "my", "name", "is", "Mace", "Windoo"])
-    print(pos)
+    from tokens import Tokens
+    import sys
+    fn = sys.argv[1]
+
+    t = Tokens()
+    pos_tags = PosTags()    
+    with open(fn) as f:
+        for l in f:
+            tokens = t.tokenize(l)
+            pos = pos_tags.tag(tokens)
+            s = ""
+            for p in pos:
+                s = s + p["word"] + " (" + p["tag"] + ") | "
+            print(s + "\n")

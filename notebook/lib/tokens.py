@@ -19,12 +19,17 @@ class Tokens:
         return t.tokenize(s)
 
 if __name__ == "__main__":
+    import sys
+    fn = sys.argv[1]
+
     t = Tokens()
-    tokens = t.tokenize("Hello, my name is Mace Windoo")
-    print(tokens)
+    with open(fn) as f:
+        for l in f:
+            tokens = t.tokenize(l)
+            print(tokens)
 
     # In this case, the colons are not made in to separate tokens
     # when there is no space around them. Looses the possible 
     # s-v-p 
-    print(t.tokenize("Station = 3, Station=3 and VII-'65 Drawer:14. Cabinet: 167"))
+    #print(t.tokenize("Station = 3, Station=3 and VII-'65 Drawer:14. Cabinet: 167"))
 
