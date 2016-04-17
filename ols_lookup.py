@@ -89,4 +89,4 @@ if __name__ == "__main__":
         except:
             print(u"Error getting {0}".format(word))
 
-        sleep(0.5)
+        sleep(0.25)
