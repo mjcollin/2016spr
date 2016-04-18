@@ -1,0 +1,2 @@
+[{"word": "height", "tag": "NN", "iob": "B-NP"}, {"word": "=", "tag": "''", "iob": "B-VP"}, {"word": "5", "tag": "CD", "iob": "B-NP"}]
+[{"word": "found", "tag": "VBD", "iob": "B-VP"}, {"word": "in", "tag": "IN", "iob": "B-PP"}, {"word": "a", "tag": "DT", "iob": "B-NP"}, {"word": "small", "tag": "JJ", "iob": "I-NP"}, {"word": "field", "tag": "NN", "iob": "I-NP"}]
