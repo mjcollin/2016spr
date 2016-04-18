@@ -22,7 +22,7 @@ class Chunks:
 
     def train(self, fn):
         self.load_training_data(fn)
-        print(self.training_data)
+        #print(self.training_data)
 
         train_set = []
         for sentence in self.training_data:
@@ -31,7 +31,7 @@ class Chunks:
                 train_set.append( (self.extract_features(sentence, i), pos_tagged["iob"]) )
 
         print(train_set)
-        print(type(train_set))
+        #print(type(train_set))
         self.classifier = nltk.NaiveBayesClassifier.train(train_set)
 
 
@@ -39,7 +39,9 @@ class Chunks:
         iob_tagged = []
         for i, pos_tagged in enumerate(sentence):
             iob = self.classifier.classify(self.extract_features(sentence, 1))
-            iob_tagged.append( {"word": pos_tagged["word"], "tag": pos_tagged["tag"], "iob": iob} )
+            dict = {"word": pos_tagged["word"], "tag": pos_tagged["tag"], "iob": iob}
+            iob_tagged.append(dict)
+            print(dict)
         return iob_tagged
 
 
@@ -48,7 +50,21 @@ class Chunks:
         Re-format a list of iob tagged words into a pos tagged
         style where the words are concatenated together.
         '''
-        return False
+        words = []
+        new_tagged = []
+        for i, iob in enumerate(iob_tagged):
+            if iob["iob"] in ["I-NP"]:
+                words.append(iob)
+            else:
+                words = [iob]
+
+            if (iob["iob"] not in ["I-NP"]) or i > len(iob_tagged): 
+                phrase = " ".join([w["word"] for w in words])
+                tag = "NP" if (len(words) > 1) else words[0]["tag"]
+                new_tagged.append({"phrase": phrase, "tag": tag, "words": words})
+                words = []
+
+        return new_tagged
 
 
 if __name__ == "__main__":
@@ -67,7 +83,7 @@ if __name__ == "__main__":
         for l in f:
             tokens = t.tokenize(l)
             pos = pos_tags.tag(tokens)
-            print(chunker.predict(pos))
+            print(chunker.assemble(chunker.predict(pos)))
             #features = chunker.extract_features(pos, 0)
             #print(features)
             #chunks = chunker.chunk(pos)
