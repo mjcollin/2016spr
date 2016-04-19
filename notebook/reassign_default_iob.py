@@ -15,7 +15,7 @@ with open(fn) as f:
             if pos["iob"] == "O" and pos["tag"].startswith("N"):
                 new_iob = "B-NP"
             else:
-                new_iob = "O"
+                new_iob = pos["iob"]
 
             d = {"word": pos["word"], "tag": pos["tag"], "iob": new_iob}
             new_pos.append(d)
