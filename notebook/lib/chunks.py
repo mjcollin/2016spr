@@ -10,11 +10,16 @@ class Chunks():
 
 
     def extract_features(self, sentence, i):
-        features = {}
-        features["tag"] = tag = sentence[i]["tag"]
-        features["prior_tag"] = "START" if (i == 0) else sentence[i-1]["tag"]
-        features["next_tag"] = "END" if (i == len(sentence) - 1) else sentence[i+1]["tag"]
-        features["starts_cap"] = True if sentence[i]["word"] == sentence[i]["word"].upper() else False
+        try:
+            features = {}
+            features["tag"] = tag = sentence[i]["tag"]
+            features["prior_tag"] = "START" if (i == 0) else sentence[i-1]["tag"]
+            features["next_tag"] = "END" if (i == len(sentence) - 1) else sentence[i+1]["tag"]
+            features["starts_cap"] = True if sentence[i]["word"] == sentence[i]["word"].upper() else False
+        except Exception as e:
+            print(sentence)
+            raise(e)
+
         return features
 
 
@@ -44,7 +49,7 @@ class Chunks():
     def tag(self, sentence):
         iob_tagged = []
         for i, pos_tagged in enumerate(sentence):
-            iob = self.classifier.classify(self.extract_features(sentence, 1))
+            iob = self.classifier.classify(self.extract_features(sentence, i))
             dict = {"word": pos_tagged["word"], "tag": pos_tagged["tag"], "iob": iob}
             iob_tagged.append(dict)
             #print(dict)
@@ -61,13 +66,13 @@ class Chunks():
         for sentence in test_data:
             iob_sentence = self.tag(sentence)
             for i, iob in enumerate(iob_sentence):
-                print(iob)
-                print(sentence[i])
+                #print(iob)
+                #print(sentence[i])
 
                 iob_in = iob["iob"] in ["B-NP", "I-NP"]
                 pos_in = sentence[i]["iob"] in ["B-NP", "I-NP"]
-                print(iob_in)
-                print(pos_in)
+                #print(iob_in)
+                #print(pos_in)
 
                 if iob_in and pos_in:
                     tp += 1
@@ -79,11 +84,12 @@ class Chunks():
                     fn += 1
 
         n = tp + fp + tn + fn
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
-        f_score = 0 #(2 * precision * recall) / (precision + recall)
+        precision = 1.0 * tp / (tp + fp)
+        recall = 1.0 * tp / (tp + fn)
+        f_score = (2 * precision * recall) / (precision + recall)
 
-        return {"n": n, "precision": precision, "recall": recall, "f_score": f_score}
+        return {"n": n, "tp": tp, "fp": fp, "tn": tn, "fn": fn,
+                "precision": precision, "recall": recall, "f_score": f_score}
 
 
 
@@ -113,27 +119,23 @@ if __name__ == "__main__":
     from tokens import Tokens
     from pos_tags import PosTags
     import sys
+    import math
+
     fn = sys.argv[1]
 
     t = Tokens()
     pos_tags = PosTags()
-    chunker = Chunks()
-
+    chunker = Chunks()    
 
     data = chunker.load_training_data(fn)
-    training_data = data[:24]
-    test_data = data[25:]
-    chunker.train(training_data)
+    num_train = int(math.floor(len(data) * 0.8))
+    training_data = data[:num_train]
+    test_data = data[num_train + 1:]
 
+    chunker.train(test_data)
+
+    print(chunker.evaluate(training_data))
     chunker.classifier.show_most_informative_features()
-    print(chunker.evaluate(test_data))
-
-#    with open(fn) as f:
-#        for l in f:
-#            tokens = t.tokenize(l)
-#            pos = pos_tags.tag(tokens)
-#            for c in chunker.assemble(chunker.predict(pos)):
-#                print(c)
 
 
 
