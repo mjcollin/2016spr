@@ -12,15 +12,27 @@ class Chunks():
     def extract_features(self, sentence, i):
         try:
             features = {}
+            features["word"] = tag = sentence[i]["word"].lower()
             features["tag"] = tag = sentence[i]["tag"]
             features["prior_tag"] = "START" if (i == 0) else sentence[i-1]["tag"]
             features["next_tag"] = "END" if (i == len(sentence) - 1) else sentence[i+1]["tag"]
             features["starts_cap"] = True if sentence[i]["word"] == sentence[i]["word"].upper() else False
+            features["since_colon"] = self.tags_since_colon(sentence, i)
         except Exception as e:
             print(sentence)
             raise(e)
 
         return features
+
+
+    def tags_since_colon(self, sentence, i):
+        tags = set()
+        for pos in sentence:
+            if pos["tag"] in [":"]:
+                tags = set()
+            else:
+                tags.add(pos["tag"])
+        return "_".join(sorted(tags))
 
 
     def load_training_data(self, fn):
@@ -43,7 +55,10 @@ class Chunks():
 
         #print(train_set)
         #print(type(train_set))
+
         self.classifier = nltk.NaiveBayesClassifier.train(train_set)
+
+        #self.classifier = nltk.MaxentClassifier.train(train_set)
 
 
     def tag(self, sentence):
@@ -66,7 +81,8 @@ class Chunks():
         for sentence in test_data:
             iob_sentence = self.tag(sentence)
             for i, iob in enumerate(iob_sentence):
-                #print(iob)
+                if iob["iob"] == "I-NP":
+                    print iob["iob"]
                 #print(sentence[i])
 
                 iob_in = iob["iob"] in ["B-NP", "I-NP"]
@@ -109,7 +125,7 @@ class Chunks():
             if (iob["iob"] not in ["I-NP"]) or i == len(iob_tagged) - 1: 
                 phrase = " ".join([w["word"] for w in words])
                 tag = "NP" if (len(words) > 1) else words[0]["tag"]
-                new_tagged.append({"phrase": phrase, "tag": tag, "words": words})
+                new_tagged.append({"phrase": phrase, "tag": tag, "len": len(words)}) # too complex for udf(), "words": words})
                 words = []
 
         return new_tagged
@@ -137,5 +153,12 @@ if __name__ == "__main__":
     print(chunker.evaluate(training_data))
     chunker.classifier.show_most_informative_features()
 
-
+#    test_fn = sys.argv[2]
+#    with open(test_fn) as f:
+#        for l in f:
+#            print(chunker.assemble(
+#                  chunker.tag(
+#                  pos_tags.tag(
+#                  t.tokenize(l)
+#                  ))))
 
